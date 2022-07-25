@@ -1,39 +1,48 @@
 
+local operator = require 'io.github.massimo-nocentini.on-lua.operator'
+
 function coroutine.const(f)
-	return coroutine.create(function (...)
-		local v = f(...)
-		while true do coroutine.yield(v) end
-	end)
+	return coroutine.create(
+		function (...)
+			operator.forever(coroutine.yield, f(...))
+		end)
 end
 
-function identity(...)
-	return ...
-end
-
-function coroutine.take (co, n)
-	return coroutine.create(function () 
-		for i = 1, n or math.huge do
-			local s, v = coroutine.resume(co)
-			coroutine.yield(v)
+function coroutine.take (n, co)
+	return coroutine.create(function ()
+		local i, continue = 1, true
+		n = n or math.huge
+		while continue and i <= n do
+			operator.frecv(coroutine.yield, 
+						   function () continue = false end,	-- simulate a break
+						   coroutine.resume(co))
+			i = i + 1
 		end
 	end)
 end
 
-function recv (s, ...) 
-	if s then return ... else return nil end
+function coroutine.foldr (co, f, init)
+	
+	local function F (each)
+		local folded = coroutine.foldr(co, f, init)
+		return f(each, folded)
+	end
+	
+	return operator.frecv(F, init, coroutine.resume(co) )
 end
 
 function coroutine.iter (co)
-	return function () return recv(coroutine.resume(co)) end 
+	return function () return operator.recv(coroutine.resume(co)) end 
 end
 
 function coroutine.nats(s)
 	return coroutine.create(function () 
 		local each = s or 0 -- initial value
-		while true do
-			coroutine.yield(each)
-			each = each + 1
-		end
+		operator.forever(
+			function () 
+				coroutine.yield(each)
+				each = each + 1 
+			end)
 	end)
 end
 
