@@ -2,23 +2,40 @@
 local operator = require 'io.github.massimo-nocentini.on-lua.operator'
 
 function coroutine.const(f)
-	return coroutine.create(
-		function (...)
-			operator.forever(coroutine.yield, f(...))
-		end)
+	
+	local function C (...)
+		operator.forever(coroutine.yield, f(...))
+	end
+	
+	return coroutine.create(C)
 end
 
-function coroutine.take (n, co)
-	return coroutine.create(function ()
+function coroutine.take (co, n)
+
+	n = n or math.huge
+
+	local function T ()
 		local i, continue = 1, true
-		n = n or math.huge
 		while continue and i <= n do
 			operator.frecv(coroutine.yield, 
 						   function () continue = false end,	-- simulate a break
 						   coroutine.resume(co))
 			i = i + 1
 		end
-	end)
+	end
+
+	return coroutine.create(T)
+end
+
+function coroutine.each(co, f)
+
+	local continue = true
+	local function stop () continue = false end
+	
+	while continue do
+		operator.frecv(f, stop,	coroutine.resume(co))
+	end
+	
 end
 
 function coroutine.foldr (co, f, init)
@@ -28,7 +45,7 @@ function coroutine.foldr (co, f, init)
 		return f(each, folded)
 	end
 	
-	return operator.frecv(F, init, coroutine.resume(co) )
+	return operator.frecv(F, init, coroutine.resume(co))
 end
 
 function coroutine.iter (co)
