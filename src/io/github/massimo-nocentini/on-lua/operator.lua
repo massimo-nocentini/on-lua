@@ -30,4 +30,8 @@ function op.add(a, b)
 	return a + b
 end
 
+function op.increment(a)
+	return op.add(a, 1)
+end
+
 return op
