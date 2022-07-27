@@ -60,32 +60,6 @@ function heapq.push(heap, item, key)
 	
 end
 
-function heapq.pop(heap)
-
-	--[[
-		def heappop(heap):
-		    """Pop the smallest item off the heap, maintaining the heap invariant."""
-		    lastelt = heap.pop()    # raises appropriate IndexError if heap is empty
-		    if heap:
-		        returnitem = heap[0]
-		        heap[0] = lastelt
-		        _siftup(heap, 0)
-		        return returnitem
-		    return lastelt		
-	]]
-	
-	local lastelt = table.remove(heap)
-	
-	if #heap > 0 then
-		local returnitem = heap[1]
-		heap[1] = lastelt
-		siftup(heap, 1)
-		return returnitem
-	else
-		return lastelt
-	end
-end
-
 local function siftup(heap, pos)
 	--[[
 		def _siftup(heap, pos):
@@ -132,6 +106,32 @@ local function siftup(heap, pos)
 	
 end
 
+function heapq.pop(heap)
+
+	--[[
+		def heappop(heap):
+		    """Pop the smallest item off the heap, maintaining the heap invariant."""
+		    lastelt = heap.pop()    # raises appropriate IndexError if heap is empty
+		    if heap:
+		        returnitem = heap[0]
+		        heap[0] = lastelt
+		        _siftup(heap, 0)
+		        return returnitem
+		    return lastelt		
+	]]
+	
+	local lastelt = table.remove(heap)
+	
+	if #heap > 0 then
+		local returnitem = heap[1]
+		heap[1] = lastelt
+		siftup(heap, 1)
+		return returnitem
+	else
+		return lastelt
+	end
+end
+
 function heapq.heapify(heap)
 	--[[
 		def heapify(x):
@@ -149,6 +149,30 @@ function heapq.heapify(heap)
 		siftup(heap, i)
 	end
 end
+
+function heapq.sort(heap)
+
+	local sorted = {}
+	
+	while #heap > 0 do table.insert(sorted, heapq.pop(heap)) end
+
+	for i, v in ipairs(sorted) do heap[i] = v end
+end
+
+--[[
+
+function heapq.sort(heap)
+	
+	local n = #heap
+	
+	for i=-n, -1 do
+		heap[i] = heapq.pop(heap)
+	end
+
+	table.move(heap, -n, -1, 1)
+end
+
+]]
 
 return heapq -- finally return the module
 

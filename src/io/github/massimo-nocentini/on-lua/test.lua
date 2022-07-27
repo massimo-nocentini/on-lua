@@ -52,3 +52,7 @@ print(table.concat(heap, ', '))
 heapq.push(heap, -12)
 
 print(table.concat(heap, ', '))
+
+heapq.sort(heap)
+
+print(table.concat(heap, ', '))
