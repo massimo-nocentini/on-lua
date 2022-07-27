@@ -90,6 +90,9 @@ function coroutine.zip(co, another_co)
 		end)
 end
 
+function table.contains(tbl, elt)
+	return tbl[elt] ~= nil
+end
 
 function table.foldr (tbl, f, init)
 	for i = #tbl, 1, -1 do
@@ -155,3 +158,5 @@ function consumer (prod)
 end
 
 -- consumer(filter(producer()))
+
+return {}
