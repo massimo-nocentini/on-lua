@@ -29,6 +29,5 @@ end
 function op.add(a, b)
 	return a + b
 end
-	
 
 return op

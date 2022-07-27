@@ -10,6 +10,10 @@ function coroutine.const(f)
 	return coroutine.create(C)
 end
 
+function coroutine.mappend(...)
+	
+end
+
 function coroutine.take (co, n)
 
 	n = n or math.huge
