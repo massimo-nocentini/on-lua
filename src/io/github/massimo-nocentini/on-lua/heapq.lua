@@ -108,7 +108,7 @@ local function siftup(heap, pos)
 		    heap[pos] = newitem
 		    _siftdown(heap, startpos, pos)
 	]]
-	local endpos, startpos, newitem, childpos = #heap, pos, heap[pos], 2 * pos
+	local endpos, startpos, newitem, childpos = #heap, pos, heap[pos], pos << 1
 	
 	-- Bubble up the smaller child until hitting a leaf.
 	while childpos <= endpos do
@@ -122,7 +122,7 @@ local function siftup(heap, pos)
 	-- Move the smaller child up.
         heap[pos] = heap[childpos]
         pos = childpos
-	childpos = 2 * pos
+	childpos = pos << 1
 	end
 	
 	-- The leaf at pos is empty now.  Put newitem there, and bubble it up
