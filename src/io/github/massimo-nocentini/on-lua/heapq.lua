@@ -148,6 +148,8 @@ function heapq.heapify(heap)
 	for i = #heap >> 1, 1, -1 do
 		siftup(heap, i)
 	end
+	
+	return heap
 end
 
 function heapq.sort(heap)
