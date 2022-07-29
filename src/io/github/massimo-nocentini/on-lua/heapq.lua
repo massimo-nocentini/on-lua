@@ -24,8 +24,6 @@ function heapq.new(lst)
 		H.position[v] = i
 	end
 	
-	H:heapify()
-	
 	return H
 end
 
