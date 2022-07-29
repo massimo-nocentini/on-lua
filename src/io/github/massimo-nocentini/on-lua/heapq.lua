@@ -150,19 +150,20 @@ function heapq.pop(heap)
 	
 	local lastelt = table.remove(heap)
 	
+	local position = heap.position
+	
 	if #heap > 0 then
 		local returnitem = heap[1]
-		heap.position[returnitem] = nil
-		
 		heap[1] = lastelt
-		heap.position[lastelt] = 1
+		position[lastelt] = 1
+		position[returnitem] = nil
 		
-		siftup(heap, 1, heap.position)
+		siftup(heap, 1, position)
 		
 		return returnitem
 	else
-		heap.position[lastelt] = nil
-		assert(#heap.position == 0)
+		position[lastelt] = nil
+		assert(#position == 0)
 		
 		return lastelt
 	end
