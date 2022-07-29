@@ -8,7 +8,28 @@ local operator = require 'io.github.massimo-nocentini.on-lua.operator'
 
 local heapq = {}
 
-local function siftdown(heap, startpos, pos)
+local mt = { __index = heapq }
+
+function isheapq(obj)
+	return getmetatable(obj) == mt
+end
+
+function heapq.new(lst) 
+	
+	H = {position = {}}
+	setmetatable(H, mt)
+	
+	for i, v in ipairs(lst) do
+		H[i] = v
+		H.position[v] = i
+	end
+	
+	H:heapify()
+	
+	return H
+end
+
+local function siftdown(heap, startpos, pos, position)
 	--[[
 		# 'heap' is a heap at all indices >= startpos, except possibly for pos.  pos
 		# is the index of a leaf with a possibly out-of-order value.  Restore the
@@ -36,6 +57,7 @@ local function siftdown(heap, startpos, pos)
 		local parent = heap[parentpos]
 		if newitem < parent then
             heap[pos] = parent
+			position[parent] = pos
             pos = parentpos
             goto continue
 		end
@@ -43,10 +65,11 @@ local function siftdown(heap, startpos, pos)
 		::continue::
 	end
 	heap[pos] = newitem
+	position[newitem] = pos
 end
 
 
-function heapq.push(heap, item, key)
+function heapq.push(heap, item)
 
 	--[[
 		def heappush(heap, item):
@@ -55,12 +78,16 @@ function heapq.push(heap, item, key)
 		    _siftdown(heap, 0, len(heap)-1)		
 	]]
 
-	table.insert(heap, item)
-	siftdown(heap, 1, #heap, key or operator.identity)
-	
+	if heap.position[item] then error('Duplicated item') 
+	else
+		table.insert(heap, item)
+		len = #heap
+		heap.position[item] = len
+		siftdown(heap, 1, len, heap.position)
+	end
 end
 
-local function siftup(heap, pos)
+local function siftup(heap, pos, position)
 	--[[
 		def _siftup(heap, pos):
 		    endpos = len(heap)
@@ -93,16 +120,19 @@ local function siftup(heap, pos)
 			if rightpos <= endpos and not (heap[childpos] < heap[rightpos]) then childpos = rightpos end
 		end
 		
-	-- Move the smaller child up.
-        heap[pos] = heap[childpos]
+		-- Move the smaller child up.
+		local v = heap[childpos]
+        heap[pos] = v
+		position[v] = pos
         pos = childpos
-	childpos = pos << 1
+		childpos = pos << 1
 	end
 	
 	-- The leaf at pos is empty now.  Put newitem there, and bubble it up
 	-- to its final resting place (by sifting its parents down).
 	heap[pos] = newitem
-	siftdown(heap, startpos, pos)
+	position[newitem] = pos
+	siftdown(heap, startpos, pos, position)
 	
 end
 
@@ -124,15 +154,23 @@ function heapq.pop(heap)
 	
 	if #heap > 0 then
 		local returnitem = heap[1]
+		heap.position[returnitem] = nil
+		
 		heap[1] = lastelt
-		siftup(heap, 1)
+		heap.position[lastelt] = 1
+		
+		siftup(heap, 1, heap.position)
+		
 		return returnitem
 	else
+		heap.position[lastelt] = nil
+		assert(#heap.position == 0)
+		
 		return lastelt
 	end
 end
 
-function heapq.heapify(heap)
+function heapq.heapify(heap, position)
 	--[[
 		def heapify(x):
 		    """Transform list into a heap, in-place, in O(len(x)) time."""
@@ -145,8 +183,11 @@ function heapq.heapify(heap)
 		    for i in reversed(range(n//2)):
 		        _siftup(x, i)
 	]]
+	
+	position = position or heap.position or {}
+	
 	for i = #heap >> 1, 1, -1 do
-		siftup(heap, i)
+		siftup(heap, i, position)
 	end
 	
 	return heap
@@ -156,9 +197,9 @@ function heapq.sort(heap)
 
 	local sorted = {}
 	
-	while #heap > 0 do table.insert(sorted, heapq.pop(heap)) end
+	while #heap > 0 do table.insert(sorted, heap:pop()) end
 
-	for i, v in ipairs(sorted) do heap[i] = v end
+	return sorted
 end
 
 --[[
