@@ -14,7 +14,7 @@ function isheapq(obj)
 	return getmetatable(obj) == mt
 end
 
-function heapq.new(lst) 
+function heapq.new(lst)
 	
 	H = {position = {}}
 	setmetatable(H, mt)
@@ -134,6 +134,12 @@ local function siftup(heap, pos, position)
 	
 end
 
+function heapq.invariant(heap)
+	for i, v in ipairs(heap) do
+		assert(heap.position[v] == i)
+	end
+end
+
 function heapq.pop(heap)
 
 	--[[
@@ -154,16 +160,20 @@ function heapq.pop(heap)
 	
 	if #heap > 0 then
 		local returnitem = heap[1]
+		
 		heap[1] = lastelt
-		position[lastelt] = 1
 		position[returnitem] = nil
+		position[lastelt] = 1
 		
 		siftup(heap, 1, position)
 		
 		return returnitem
 	else
 		position[lastelt] = nil
-		assert(#position == 0)
+		
+		local p = false
+		for _, _ in pairs(position) do p = true; break end
+		assert(not p)
 		
 		return lastelt
 	end
