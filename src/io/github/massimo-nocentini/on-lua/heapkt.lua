@@ -16,7 +16,9 @@ end
 
 function heapq.new(lst, key)
 	
-	H = {position = {}, key = key or operator.identity}
+	H = {position = {}, 
+		 key = key or operator.identity}
+	
 	setmetatable(H, mt)
 	
 	for i, v in ipairs(lst) do
@@ -62,21 +64,21 @@ function heapq.delete(heap, i)
 	local elt = table.remove(heap)
 	heap.position[elt] = nil
 	
-	if heap:key(i) < heap:key(i >> 1) 
-	then heapifyup(heap, i, heap.position, heap.key)
+	if heap:key(i) < heap:key(i >> 1)
+	then error('some error'); heapifyup(heap, i, heap.position, heap.key)
 	else heapifydown(heap, i, heap.position, heap.key) end
-	
+
 	return elt
 end
 
 local function swap(heap, position, i, j)
 	local J, I = heap[j], heap[i]
 	heap[i], heap[j] = J, I
-	position[J], position[I] = i, j	
+	position[J], position[I] = i, j
 end
 
-function heapq.pop(heap)
-	return heap:delete(1)
+function heapq.pop(heap, elt)
+	return heap:delete(heap.position[elt] or 1)
 end
 
 function heapq.push(heap, item)
