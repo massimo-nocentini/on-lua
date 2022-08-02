@@ -29,7 +29,13 @@ function heapq.new(lst, key)
 	return H
 end
 
-local function heapifyup(heap, i, position, key):
+local function swap(heap, position, i, j)
+	local J, I = heap[j], heap[i]
+	heap[i], heap[j] = J, I
+	position[J], position[I] = i, j
+end
+
+local function heapifyup(heap, i, position, key)
 	-- I'm a recursive definition of siftdown
 	if i < 2 then return end
 	local j = i >> 1
@@ -39,7 +45,7 @@ local function heapifyup(heap, i, position, key):
 	end	
 end
 
-local function heapifydown(heap, i, position, key):
+local function heapifydown(heap, i, position, key)
 	local n, ii = #heap, i << 1
 	if ii > n then return end
 	
@@ -69,12 +75,6 @@ function heapq.delete(heap, i)
 	else heapifydown(heap, i, heap.position, heap.key) end
 
 	return elt
-end
-
-local function swap(heap, position, i, j)
-	local J, I = heap[j], heap[i]
-	heap[i], heap[j] = J, I
-	position[J], position[I] = i, j
 end
 
 function heapq.pop(heap, elt)
