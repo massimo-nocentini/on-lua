@@ -14,9 +14,11 @@ function isheapq(obj)
 	return getmetatable(obj) == mt
 end
 
-function heapq.new(lst)
+function heapq.new(lst, key)
 	
-	H = {position = {}}
+	H = {position = {}, 
+		 key = key or operator.identity}
+	
 	setmetatable(H, mt)
 	
 	for i, v in ipairs(lst) do
@@ -27,7 +29,7 @@ function heapq.new(lst)
 	return H
 end
 
-local function siftdown(heap, startpos, pos, position)
+local function siftdown(heap, startpos, pos, position, key)
 	--[[
 		# 'heap' is a heap at all indices >= startpos, except possibly for pos.  pos
 		# is the index of a leaf with a possibly out-of-order value.  Restore the
@@ -53,7 +55,7 @@ local function siftdown(heap, startpos, pos, position)
 	while pos > startpos do
 		local parentpos = pos >> 1
 		local parent = heap[parentpos]
-		if newitem < parent then
+		if key(newitem) < key(parent) then
             heap[pos] = parent
 			position[parent] = pos
             pos = parentpos
@@ -81,11 +83,11 @@ function heapq.push(heap, item)
 		table.insert(heap, item)
 		len = #heap
 		heap.position[item] = len
-		siftdown(heap, 1, len, heap.position)
+		siftdown(heap, 1, len, heap.position, heap.key)
 	end
 end
 
-local function siftup(heap, pos, position)
+local function siftup(heap, pos, position, key)
 	--[[
 		def _siftup(heap, pos):
 		    endpos = len(heap)
@@ -115,7 +117,7 @@ local function siftup(heap, pos, position)
 		-- Set childpos to index of smaller child.
 		do
 			local rightpos = childpos + 1
-			if rightpos <= endpos and not (heap[childpos] < heap[rightpos]) then childpos = rightpos end
+			if rightpos <= endpos and not (key(heap[childpos]) < key(heap[rightpos])) then childpos = rightpos end
 		end
 		
 		-- Move the smaller child up.
@@ -130,7 +132,7 @@ local function siftup(heap, pos, position)
 	-- to its final resting place (by sifting its parents down).
 	heap[pos] = newitem
 	position[newitem] = pos
-	siftdown(heap, startpos, pos, position)
+	siftdown(heap, startpos, pos, position, key)
 	
 end
 
@@ -165,7 +167,7 @@ function heapq.pop(heap)
 		position[returnitem] = nil
 		position[lastelt] = 1
 		
-		siftup(heap, 1, position)
+		siftup(heap, 1, position, heap.key)
 		
 		return returnitem
 	else
@@ -179,7 +181,7 @@ function heapq.pop(heap)
 	end
 end
 
-function heapq.heapify(heap, position)
+function heapq.heapify(heap, position, key)
 	--[[
 		def heapify(x):
 		    """Transform list into a heap, in-place, in O(len(x)) time."""
@@ -194,9 +196,10 @@ function heapq.heapify(heap, position)
 	]]
 	
 	position = position or heap.position or {}
+	key = key or heap.key or {}
 	
 	for i = #heap >> 1, 1, -1 do
-		siftup(heap, i, position)
+		siftup(heap, i, position, key)
 	end
 	
 	return heap
